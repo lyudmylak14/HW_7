@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, isAnyOf } from '@reduxjs/toolkit';
 import {
   addContactThunk,
   deleteContactThunk,
@@ -41,18 +41,21 @@ const contactsSlice = createSlice({
         state.items = action.payload;
         state.loading = false;
       })
-      .addCase(fetchContactsThunk.pending, state => {
-        state.loading = true;
-      })
+    //   .addCase(fetchContactsThunk.pending, state => {
+    //     state.loading = true;
+    //   })
       .addCase(deleteContactThunk.fulfilled, (state, action) => {
         state.items = state.items.filter(item => item.id !== action.payload);
       })
-      .addCase(deleteContactThunk.rejected, state => {
-        state.error = true;
-      })
+    //   .addCase(deleteContactThunk.rejected, state => {
+    //     state.error = true;
+    //   })
       .addCase(addContactThunk.fulfilled, (state, action) => {
         state.items.push(action.payload);
-      });
+      })
+      .addMatcher(isAnyOf(fetchContactsThunk.pending, deleteContactThunk.pending, addContactThunk.pending), state => {state.loading = true; state.error = null;})
+      .addMatcher(isAnyOf(fetchContactsThunk.rejected, deleteContactThunk.rejected, addContactThunk.rejected), state => {state.loading = false; state.error = true;})
+      .addMatcher(isAnyOf(fetchContactsThunk.fulfilled, deleteContactThunk.fulfilled, addContactThunk.fulfilled), state => {state.loading = false;})
   },
 });
 
